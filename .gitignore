@@ -1,0 +1,16 @@
+# Vim Generated Files
+*.swp
+*~
+
+# Generated Files
+TankWar2D
+*.exe
+a.out
+*.o
+
+# Generated Directories
+build/
+_tmp/
+bin/
+dev/
+obj/
