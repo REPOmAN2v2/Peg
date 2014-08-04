@@ -55,7 +55,7 @@ Triangle ** initialiseGame(Origin *origin)
 			triangle[i][j].color = randColor();
 			triangle[i][j].act_x = triangle[i][j].mid_x;
 			triangle[i][j].act_y = triangle[i][j].mid_y;
-			triangle[i][j].status = 0;
+			triangle[i][j].status = 1;
 			fprintf(stdout, "%d,%d ", triangle[i][j].mid_x, triangle[i][j].mid_y);
 		}
 		fprintf(stdout, "\n");
@@ -199,73 +199,75 @@ void SDLPrint(int textsize, SDL_Color color, SDL_Rect position, const char *text
 	SDL_DestroyTexture(texture);
 }
 
+/* Adapted from SDL2_gfx */
+
 int drawCircle(Sint16 x, Sint16 y, Sint16 rad, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
-	int result = 0;
-	Sint16 cx = 0;
-	Sint16 cy = rad;
-	Sint16 ocx = (Sint16) 0xffff;
-	Sint16 ocy = (Sint16) 0xffff;
-	Sint16 df = 1 - rad;
-	Sint16 d_e = 3;
-	Sint16 d_se = -2 * rad + 5;
-	Sint16 xpcx, xmcx, xpcy, xmcy, ypcy, ymcy, ypcx, ymcx;
+	int result;
+	int ix, iy;
+	int h, i, j, k;
+	int oh, oi, oj, ok;
+	int xmj, xpj;
+	int xmk, xpk;
 
-	if (rad <= 0) {
-		fprintf(stderr, "Radius < 0");
-		return -1;
+	if (rad < 0) {
+		return (-1);
 	}
 
+	/*
+	* Set color
+	*/
+	result = 0;
 	result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
 	result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
 
+	/*
+	* Init vars 
+	*/
+	oh = oi = oj = ok = 0xFFFF;
+
+	/*
+	* Draw 
+	*/
+	ix = 0;
+	iy = rad * 64;
+
 	do {
-		xpcx = x + cx;
-		xmcx = x - cx;
-		xpcy = x + cy;
-		xmcy = x - cy;
-		
-		if (ocy != cy) {
-			if (cy > 0) {
-				ypcy = y + cy;
-				ymcy = y - cy;
-				result |= drawLine(xmcx, xpcx, ypcy);
-				result |= drawLine(xmcx, xpcx, ymcy);
+		h = (ix + 32) >> 6;
+		i = (iy + 32) >> 6;
+		j = h;
+		k = i;
+
+		if ((oi != i) && (oh != i)) {
+			xmj = x - j;
+			xpj = x + j;
+			if (i > 0) {
+				result |= drawLine(xmj, xpj, y + i);
+				result |= drawLine(xmj, xpj, y - i);
 			} else {
-				result |= drawLine(xmcx, xpcx, y);
+				result |= drawLine(xmj, xpj, y);
 			}
-
-			ocy = cy;
+			oi = i;
 		}
-
-		if (ocx != cx) {
-			if (cx != cy) {
-				if (cx > 0) {
-					ypcx = y + cx;
-					ymcx = y - cx;
-					result |= drawLine(xmcy, xpcy, ymcx);
-					result |= drawLine(xmcy, xpcy, ypcx);
-				} else {
-					result |= drawLine(xmcy, xpcy, y);
-				}
+		if ((oh != h) && (oi != h) && (i != h)) {
+			xmk = x - k;
+			xpk = x + k;
+			if (h > 0) {
+				result |= drawLine(xmk, xpk, y + h);
+				result |= drawLine(xmk, xpk, y - h);
+			} else {
+				result |= drawLine(xmk, xpk, y);
 			}
-			ocx = cx;
+			oh = h;
 		}
 
-		if (df < 0) {
-			df += d_e;
-			d_e += 2;
-			d_se += 2;
-		} else {
-			df += d_se;
-			d_e += 2;
-			d_se += 4;
-			cy--;
-		}
+		ix = ix + iy / rad;
+		iy = iy - ix / rad;
 
-	} while (cx <= cy);
+	} while (i > h);
 
-	return result;
+
+	return (result);
 }
 
 int drawLine(Sint16 x1, Sint16 x2, Sint16 y)
