@@ -2,15 +2,22 @@ ODIR=./obj
 BDIR=./bin
 SRC=./src
 
+CC = gcc
+CFLAGS := -Wall -g -std=c11
+
 _HEADERS := sdl.h draw.h
 _OBJECTS := $(_HEADERS:.h=.o)
 OBJECTS = $(patsubst %,$(ODIR)/%,$(_OBJECTS))
 HEADERS = $(patsubst %,$(SRC)/%,$(_HEADERS))
-LIBS := -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -luser32 -lgdi32 -lwinmm -ldxguid
-INCLUDES := -I. -I$(ODIR)
-CFLAGS = -Wall -g -std=c11
+
+ifdef COMSPEC
+	LIBS := -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -luser32 -lgdi32 -lwinmm -ldxguid
+else
+	LIBS := `sdl2-config --cflags --libs` -lSDL2_image -lSDL2_ttf
+endif
+
 #NODEBUG = -O2 -std=c11 -mwindows
-CC = gcc
+
 
 default: Peg
 
