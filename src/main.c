@@ -4,7 +4,7 @@
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 int diameter = 50;
-const int circles = HEIGHT + ((HEIGHT - 1) / 2) * HEIGHT;
+int circles = HEIGHT + ((HEIGHT - 1) / 2) * HEIGHT;
 int emptySize = 25;
 const SDL_Color textColor = {255,255,255,255};
 const SDL_Color emptyColor = {50,50,50,255};
@@ -25,13 +25,15 @@ int main( int argc, char **argv )
 void gameplay()
 {
 	Origin origin;
-	Triangle **triangle = initialiseGame(&origin);
-	fprintf(stdout, "Initialised Game\n");
-	int numCircles = HEIGHT + ((HEIGHT - 1) / 2) * HEIGHT;
 	int removeOne = 1, noneSelected = 1;
 	int held_x = 0, held_y = 0;
+	float dt = 1/60;
 
-	drawGame(triangle, held_y, held_x, numCircles, noneSelected, origin);
+	Triangle **triangle = initialiseGame(&origin);
+	fprintf(stdout, "Initialised Game\n");
+	update(dt, triangle);
+
+	drawGame(triangle, held_y, held_x, noneSelected, origin);
 }
 
 Triangle ** initialiseGame(Origin *origin)
@@ -54,7 +56,7 @@ Triangle ** initialiseGame(Origin *origin)
 			triangle[i][j].act_x = triangle[i][j].mid_x;
 			triangle[i][j].act_y = triangle[i][j].mid_y;
 			triangle[i][j].status = 0;
-			fprintf(stdout, "%d ", triangle[i][j].mid_x);
+			fprintf(stdout, "%d,%d ", triangle[i][j].mid_x, triangle[i][j].mid_y);
 		}
 		fprintf(stdout, "\n");
 	}
@@ -72,10 +74,12 @@ void resize(Triangle **triangle, Origin *origin)
 		diameter = h / (HEIGHT * 2);
 	}
 
+	fprintf(stdout, "diameter: %d\n", diameter);
+
 	for (int i = 0; i < HEIGHT; i++) {
-		for (int j = 0; j < i+1; j++) {
-			triangle[i][j].mid_x = diameter * (2 * j + (HEIGHT - i + 1.5));
-			triangle[i][j].mid_y = diameter * (i+1) * ((1 + sqrt(5)) / 2) - (diameter / 2);
+		for (int j = 0; j <= i; j++) {
+			triangle[i][j].mid_x = diameter * (2 * j + (HEIGHT - i - 0.5));
+			triangle[i][j].mid_y = diameter * (i+1) * ((1 + sqrt(5)) / 2) - (diameter);
 		}
 	}
 
@@ -94,7 +98,19 @@ SDL_Color randColor()
 	return color;
 }
 
-void drawGame(Triangle **triangle, int held_y, int held_x, int numCircles, int noneSelected, Origin origin)
+void update(float dt, Triangle **triangle)
+{
+	for (int i = 0; i < HEIGHT; i++) {
+		for (int j = 0; j < i+1; j++) {
+			if (triangle[i][j].status == 0) {
+				triangle[i][j].act_x = triangle[i][j].act_x - ((triangle[i][j].act_x - triangle[i][j].mid_x) * SPEED * dt);
+				triangle[i][j].act_y = triangle[i][j].act_y - ((triangle[i][j].act_y - triangle[i][j].mid_y) * SPEED * dt);
+			}
+		}
+	}
+}
+
+void drawGame(Triangle **triangle, int held_y, int held_x, int noneSelected, Origin origin)
 {
 	SDL_Color color = {0,0,0,0};
 	SDL_Rect position = {0,0,0,0};
@@ -106,7 +122,7 @@ void drawGame(Triangle **triangle, int held_y, int held_x, int numCircles, int n
 	fprintf(stdout, "drawGame2\n");
 	SDL_RenderClear(renderer);
 
-	if (!noneSelected) {
+	/*if (!noneSelected) {
 		color = triangle[held_y][held_x].color;
 		sprintf(text, "Circle %d,%d selected", held_x, held_y);
 		SDLPrint(30, color, position, text);
@@ -118,30 +134,33 @@ void drawGame(Triangle **triangle, int held_y, int held_x, int numCircles, int n
 
 	position.y = 50;
 
-	if (numCircles == 1) {
+	if (circles == 1) {
 		color = textColor;
 		strcpy(text, "You won!");
 		SDLPrint(30, color, position, text);
 	} else {
-		sprintf(text, "%d left", numCircles);
+		sprintf(text, "%d left", circles);
 		SDLPrint(30, color, position, text);
-	}
+	}*/
 
-	fprintf(stdout, "Drew text\n");
+	fprintf(stdout, "Origin: %d,%d\n", origin.x, origin.y);
 
 	for (size_t i = 0; i < HEIGHT; i++) {
-		for (size_t j = 0; j < i; j++) {
+		for (size_t j = 0; j <= i; j++) {
 			if (triangle[i][j].status == 0) {
-				SDL_SetRenderDrawColor(renderer, emptyColor.r, emptyColor.g, emptyColor.b, 255);
+				SDL_SetRenderDrawColor(renderer, emptyColor.r, emptyColor.g, emptyColor.b, emptyColor.a);
 				position.x = triangle[i][j].mid_x - emptySize / 2 + origin.x;
 				position.y = triangle[i][j].mid_y - emptySize / 2 + origin.y;
 				position.w = emptySize;
 				position.h = emptySize;
 				SDL_RenderFillRect(renderer, &position);
+				//fprintf(stdout, "%d,%d ", position.x, position.h);
+				//fprintf(stdout, "%d - %d/2 = %d\n", triangle[i][j].mid_x, emptySize/2, position.x);
 			} else {
 				drawCircle(triangle[i][j].act_x + origin.x, triangle[i][j].act_y + origin.y, diameter / 2, triangle[i][j].color.r, triangle[i][j].color.g, triangle[i][j].color.b, triangle[i][j].color.a);
 			}
 		}
+		//fprintf(stdout, "\n");
 	}
 
 	SDL_RenderPresent(renderer);
@@ -151,7 +170,17 @@ void drawGame(Triangle **triangle, int held_y, int held_x, int numCircles, int n
 
 		if (event.key.keysym.sym == SDLK_ESCAPE || event.type == SDL_QUIT) {
 			//free(text);
+			for (size_t i = 0; i < HEIGHT; i++) {
+				free(triangle[i]);
+			}
+			free(triangle);
 			exit(1);
+		}
+
+		if (event.type == SDL_MOUSEBUTTONDOWN) {
+			int x, y;
+			SDL_GetMouseState(&x, &y);
+			fprintf(stdout, "%d,%d\n", x,y);
 		}
 	}
 }
