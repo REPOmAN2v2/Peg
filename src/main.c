@@ -1,5 +1,6 @@
 #include "include.h"
 #include "sdl.h"
+#include "draw.h"
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
@@ -158,31 +159,14 @@ void drawGame(Triangle **triangle, int held_y, int held_x, int noneSelected, Ori
 				//fprintf(stdout, "%d - %d/2 = %d\n", triangle[i][j].mid_x, emptySize/2, position.x);
 			} else {
 				drawCircle(triangle[i][j].act_x + origin.x, triangle[i][j].act_y + origin.y, diameter / 2, triangle[i][j].color.r, triangle[i][j].color.g, triangle[i][j].color.b, triangle[i][j].color.a);
+				fillCircle(triangle[i][j].act_x + origin.x, triangle[i][j].act_y + origin.y, diameter / 2, triangle[i][j].color.r, triangle[i][j].color.g, triangle[i][j].color.b, triangle[i][j].color.a);
 			}
 		}
 		//fprintf(stdout, "\n");
 	}
 
 	SDL_RenderPresent(renderer);
-	while (1) {
-		SDL_Event event;
-		SDL_WaitEvent(&event);
-
-		if (event.key.keysym.sym == SDLK_ESCAPE || event.type == SDL_QUIT) {
-			//free(text);
-			for (size_t i = 0; i < HEIGHT; i++) {
-				free(triangle[i]);
-			}
-			free(triangle);
-			exit(1);
-		}
-
-		if (event.type == SDL_MOUSEBUTTONDOWN) {
-			int x, y;
-			SDL_GetMouseState(&x, &y);
-			fprintf(stdout, "%d,%d\n", x,y);
-		}
-	}
+	events(triangle);
 }
 
 void SDLPrint(int textsize, SDL_Color color, SDL_Rect position, const char *text)
@@ -199,78 +183,25 @@ void SDLPrint(int textsize, SDL_Color color, SDL_Rect position, const char *text
 	SDL_DestroyTexture(texture);
 }
 
-/* Adapted from SDL2_gfx */
-
-int drawCircle(Sint16 x, Sint16 y, Sint16 rad, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+void events(Triangle **triangle)
 {
-	int result;
-	int ix, iy;
-	int h, i, j, k;
-	int oh, oi, oj, ok;
-	int xmj, xpj;
-	int xmk, xpk;
+	SDL_Event event;
 
-	if (rad < 0) {
-		return (-1);
+	while (1) {
+		SDL_WaitEvent(&event);
+
+		if (event.key.keysym.sym == SDLK_ESCAPE || event.type == SDL_QUIT) {
+			for (size_t i = 0; i < HEIGHT; i++) {
+				free(triangle[i]);
+			}
+			free(triangle);
+			exit(1);
+		}
+
+		if (event.type == SDL_MOUSEBUTTONDOWN) {
+			int x, y;
+			SDL_GetMouseState(&x, &y);
+			fprintf(stdout, "%d,%d\n", x,y);
+		}
 	}
-
-	/*
-	* Set color
-	*/
-	result = 0;
-	result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
-	result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
-
-	/*
-	* Init vars 
-	*/
-	oh = oi = oj = ok = 0xFFFF;
-
-	/*
-	* Draw 
-	*/
-	ix = 0;
-	iy = rad * 64;
-
-	do {
-		h = (ix + 32) >> 6;
-		i = (iy + 32) >> 6;
-		j = h;
-		k = i;
-
-		if ((oi != i) && (oh != i)) {
-			xmj = x - j;
-			xpj = x + j;
-			if (i > 0) {
-				result |= drawLine(xmj, xpj, y + i);
-				result |= drawLine(xmj, xpj, y - i);
-			} else {
-				result |= drawLine(xmj, xpj, y);
-			}
-			oi = i;
-		}
-		if ((oh != h) && (oi != h) && (i != h)) {
-			xmk = x - k;
-			xpk = x + k;
-			if (h > 0) {
-				result |= drawLine(xmk, xpk, y + h);
-				result |= drawLine(xmk, xpk, y - h);
-			} else {
-				result |= drawLine(xmk, xpk, y);
-			}
-			oh = h;
-		}
-
-		ix = ix + iy / rad;
-		iy = iy - ix / rad;
-
-	} while (i > h);
-
-
-	return (result);
-}
-
-int drawLine(Sint16 x1, Sint16 x2, Sint16 y)
-{
-	return SDL_RenderDrawLine(renderer, x1, y, x2, y);
 }

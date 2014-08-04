@@ -2,7 +2,7 @@ ODIR=./obj
 BDIR=./bin
 SRC=./src
 
-_HEADERS := sdl.h
+_HEADERS := sdl.h draw.h
 _OBJECTS := $(_HEADERS:.h=.o)
 OBJECTS = $(patsubst %,$(ODIR)/%,$(_OBJECTS))
 HEADERS = $(patsubst %,$(SRC)/%,$(_HEADERS))

@@ -14,13 +14,6 @@
 #define HEIGHT 5
 #define SPEED 25
 
-/*typedef struct _color {
-	Uint8 r;
-	Uint8 g;
-	Uint8 b;
-	Uint8 a;
-} Color;*/
-
 typedef struct _triangle {
 	int act_x;
 	int act_y;
@@ -50,7 +43,6 @@ SDL_Color randColor();
 void update(float dt, Triangle **triangle);
 void drawGame(Triangle **triangle, int held_y, int held_x, int noneSelected, Origin origin);
 void SDLPrint(int textsize, SDL_Color color, SDL_Rect position, const char *text);
-int drawCircle(Sint16 x, Sint16 y, Sint16 rad, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-int drawLine(Sint16 x1, Sint16 x2, Sint16 y);
+void events(Triangle **triangle);
 
 #endif
