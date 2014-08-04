@@ -11,9 +11,9 @@ OBJECTS = $(patsubst %,$(ODIR)/%,$(_OBJECTS))
 HEADERS = $(patsubst %,$(SRC)/%,$(_HEADERS))
 
 ifdef COMSPEC
-	LIBS := -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -luser32 -lgdi32 -lwinmm -ldxguid
+	LIBS := -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -luser32 -lgdi32 -lwinmm -ldxguid -lm
 else
-	LIBS := `sdl2-config --cflags --libs` -lSDL2_image -lSDL2_ttf
+	LIBS := `sdl2-config --cflags --libs` -lSDL2_image -lSDL2_ttf -lm
 endif
 
 #NODEBUG = -O2 -std=c11 -mwindows
