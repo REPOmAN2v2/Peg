@@ -31,7 +31,7 @@ void gameplay()
 	float dt = 1/60;
 
 	Triangle **triangle = initialiseGame(&origin);
-	fprintf(stdout, "Initialised Game\n");
+	fprintf(stdout, "DEBUG: Initialised Game\n");
 	update(dt, triangle);
 
 	drawGame(triangle, held_y, held_x, noneSelected, origin);
@@ -75,7 +75,7 @@ void resize(Triangle **triangle, Origin *origin)
 		diameter = h / (HEIGHT * 2);
 	}
 
-	fprintf(stdout, "diameter: %d\n", diameter);
+	fprintf(stdout, "DEBUG: diameter: %d\n", diameter);
 
 	for (int i = 0; i < HEIGHT; i++) {
 		for (int j = 0; j <= i; j++) {
@@ -113,38 +113,13 @@ void update(float dt, Triangle **triangle)
 
 void drawGame(Triangle **triangle, int held_y, int held_x, int noneSelected, Origin origin)
 {
-	SDL_Color color = {0,0,0,0};
 	SDL_Rect position = {0,0,0,0};
-	fprintf(stdout, "drawGame\n");
-	char text[100];
-	//char *text = (char*)malloc(sizeof(char) * 100);
-	fprintf(stdout, "drawGame1\n");
 	//SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-	fprintf(stdout, "drawGame2\n");
 	SDL_RenderClear(renderer);
 
-	/*if (!noneSelected) {
-		color = triangle[held_y][held_x].color;
-		sprintf(text, "Circle %d,%d selected", held_x, held_y);
-		SDLPrint(30, color, position, text);
-	} else {
-		color = textColor;
-		strcpy(text, "None Selected");
-		SDLPrint(30, color, position, text);
-	}
+	fprintf(stdout, "DEBUG: Origin: %d,%d\n", origin.x, origin.y);
 
-	position.y = 50;
-
-	if (circles == 1) {
-		color = textColor;
-		strcpy(text, "You won!");
-		SDLPrint(30, color, position, text);
-	} else {
-		sprintf(text, "%d left", circles);
-		SDLPrint(30, color, position, text);
-	}*/
-
-	fprintf(stdout, "Origin: %d,%d\n", origin.x, origin.y);
+	drawText(triangle, held_y, held_x, noneSelected, position);
 
 	for (size_t i = 0; i < HEIGHT; i++) {
 		for (size_t j = 0; j <= i; j++) {
@@ -155,18 +130,47 @@ void drawGame(Triangle **triangle, int held_y, int held_x, int noneSelected, Ori
 				position.w = emptySize;
 				position.h = emptySize;
 				SDL_RenderFillRect(renderer, &position);
-				//fprintf(stdout, "%d,%d ", position.x, position.h);
-				//fprintf(stdout, "%d - %d/2 = %d\n", triangle[i][j].mid_x, emptySize/2, position.x);
 			} else {
 				drawCircle(triangle[i][j].act_x + origin.x, triangle[i][j].act_y + origin.y, diameter / 2, triangle[i][j].color.r, triangle[i][j].color.g, triangle[i][j].color.b, triangle[i][j].color.a);
 				fillCircle(triangle[i][j].act_x + origin.x, triangle[i][j].act_y + origin.y, diameter / 2, triangle[i][j].color.r, triangle[i][j].color.g, triangle[i][j].color.b, triangle[i][j].color.a);
 			}
 		}
-		//fprintf(stdout, "\n");
 	}
 
 	SDL_RenderPresent(renderer);
 	events(triangle);
+}
+
+void drawText(Triangle **triangle, int held_y, int held_x, int noneSelected, SDL_Rect position)
+{
+	// SDL_Color color = {0,0,0,0};
+	char text[100];
+	//char *text = (char*)malloc(sizeof(char) * 100);
+
+	if (!noneSelected) {
+		// color = triangle[held_y][held_x].color;
+		sprintf(text, "Circle %d,%d selected", held_x, held_y);
+		//SDLPrint(30, color, position, text);
+		fprintf(stdout, "%s\n", text);
+	} else {
+		// color = textColor;
+		strcpy(text, "None Selected");
+		//SDLPrint(30, color, position, text);
+		fprintf(stdout, "%s\n", text);
+	}
+
+	//position.y = 50;
+
+	if (circles == 1) {
+		// color = textColor;
+		strcpy(text, "You won!");
+		//SDLPrint(30, color, position, text);
+		fprintf(stdout, "%s\n", text);
+	} else {
+		sprintf(text, "%d left", circles);
+		//SDLPrint(30, color, position, text);
+		fprintf(stdout, "%s\n", text);
+	}
 }
 
 void SDLPrint(int textsize, SDL_Color color, SDL_Rect position, const char *text)
@@ -201,7 +205,7 @@ void events(Triangle **triangle)
 		if (event.type == SDL_MOUSEBUTTONDOWN) {
 			int x, y;
 			SDL_GetMouseState(&x, &y);
-			fprintf(stdout, "%d,%d\n", x,y);
+			fprintf(stdout, "DEBUG: %d,%d\n", x,y);
 		}
 	}
 }

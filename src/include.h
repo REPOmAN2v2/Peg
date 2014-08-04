@@ -42,6 +42,7 @@ void resize(Triangle **triangle, Origin *origin);
 SDL_Color randColor();
 void update(float dt, Triangle **triangle);
 void drawGame(Triangle **triangle, int held_y, int held_x, int noneSelected, Origin origin);
+void drawText(Triangle **triangle, int held_y, int held_x, int noneSelected, SDL_Rect position);
 void SDLPrint(int textsize, SDL_Color color, SDL_Rect position, const char *text);
 void events(Triangle **triangle);
 

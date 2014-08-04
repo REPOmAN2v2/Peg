@@ -54,7 +54,7 @@ int initialiseSDL()
 		return -1;
 	}
 
-	fprintf(stdout, "Finished initialisation.\n");
+	fprintf(stdout, "DEBUG: Finished initialising SDL.\n");
 	
     return 0;
 } 
