@@ -10,7 +10,7 @@ void checkCircleClicked(Triangle triangle[][HEIGHT], Origin origin, int x, int y
 	if (x != -1 && y != -1) {
 		if (removeOne) {
 			fprintf(stdout, "DEBUG: First circle to remove: (%d, %d)\n", x, y);
-			setEmpty(triangle, origin, x, y);
+			setEmpty(triangle, x, y);
 			circles -= 1;
 			removeOne = 0;
 			drawGame(triangle, origin);
@@ -52,7 +52,7 @@ int distance(int ax, int ay, int bx, int by)
 	return sqrt((ax - bx) * (ax - bx) + (ay - by) * (ay - by));
 }
 
-int setEmpty(Triangle triangle[][HEIGHT], Origin origin, int x, int y)
+int setEmpty(Triangle triangle[][HEIGHT], int x, int y)
 {
 	if (triangle[y][x].status != 0) {
 		triangle[y][x].status = 0;
@@ -82,33 +82,33 @@ void tryToJumpTo(Triangle triangle[][HEIGHT], Origin origin, int x, int y) {
 }
 
 void jumpTo(Triangle triangle[][HEIGHT], Origin origin, int x, int y) {
-	if (checkValidAndRemove(triangle, origin, x, y)) {
+	if (checkValidAndRemove(triangle, x, y)) {
 		triangle[y][x].color = triangle[held_y][held_x].color;
 		triangle[y][x].status = 1;
-		setEmpty(triangle, origin, held_x, held_y);
+		setEmpty(triangle, held_x, held_y);
 		circles -= 1;
 		drawGame(triangle, origin);
 	}
 }
 
-int checkValidAndRemove(Triangle triangle[][HEIGHT], Origin origin, int x, int y) {
+int checkValidAndRemove(Triangle triangle[][HEIGHT], int x, int y) {
 	if (held_x == x) {
 		if (held_y - 2 == y) {
-			return setEmpty(triangle, origin, held_x, held_y - 1);
+			return setEmpty(triangle, held_x, held_y - 1);
 		} else if (held_y + 2 == y) {
-			return setEmpty(triangle, origin, held_x, held_y + 1);
+			return setEmpty(triangle, held_x, held_y + 1);
 		}
 	} else if (held_x - 2 == x) {
 		if (held_y - 2 == y) {
-			return setEmpty(triangle, origin, held_x - 1, held_y - 1);
+			return setEmpty(triangle, held_x - 1, held_y - 1);
 		} else if (held_y == y) {
-			return setEmpty(triangle, origin, held_x - 1, held_y);
+			return setEmpty(triangle, held_x - 1, held_y);
 		}
 	} else if (held_x + 2 == x) {
 		if (held_y == y) {
-			return setEmpty(triangle, origin, held_x + 1, held_y);
+			return setEmpty(triangle, held_x + 1, held_y);
 		} else if (held_y + 2 == y) {
-			return setEmpty(triangle, origin, held_x + 1, held_y + 1);
+			return setEmpty(triangle, held_x + 1, held_y + 1);
 		}
 	}
 

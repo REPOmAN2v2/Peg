@@ -3,7 +3,7 @@ BDIR=./bin
 SRC=./src
 
 CC = gcc
-CFLAGS := -Wall -g -std=c11
+CFLAGS := -Wall -Wextra -Og -std=c11
 
 _HEADERS := sdl.h draw.h game.h gameplay.h
 _OBJECTS := $(_HEADERS:.h=.o)
