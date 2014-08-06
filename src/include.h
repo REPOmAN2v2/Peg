@@ -37,21 +37,21 @@ extern SDL_Window *window;
 extern SDL_Renderer *renderer;
 
 void gameplay();
-Triangle ** initialiseGame(Origin *origin);
-void resize(Triangle **triangle, Origin *origin);
+void initialiseGame(Triangle triangle[][HEIGHT], Origin *origin);
+void resize(Triangle triangle[][HEIGHT], Origin *origin);
 SDL_Color randColor();
-void update(float dt, Triangle **triangle);
-void drawGame(Triangle **triangle, Origin origin);
-void drawText(Triangle **triangle, SDL_Rect position);
+void update(float dt, Triangle triangle[][HEIGHT]);
+void drawGame(Triangle triangle[][HEIGHT], Origin origin);
+void drawText(Triangle triangle[][HEIGHT], SDL_Rect position);
 void SDLPrint(int textsize, SDL_Color color, SDL_Rect position, const char *text);
-void events(Triangle **triangle, Origin origin);
-void checkCircleClicked(Triangle **triangle, Origin origin, int x, int y);
-int pixelToTriangle(Triangle **triangle, int *x, int *y);
+void events(Triangle triangle[][HEIGHT], Origin origin);
+void checkCircleClicked(Triangle triangle[][HEIGHT], Origin origin, int x, int y);
+int pixelToTriangle(Triangle triangle[][HEIGHT], int *x, int *y);
 int distance(int ax, int ay, int bx, int by);
-int setEmpty(Triangle **triangle, Origin origin, int x, int y);
-void hold(Triangle **triangle, int x, int y);
-void tryToJumpTo(Triangle **triangle, Origin origin, int x, int y);
-void jumpTo(Triangle **triangle, Origin origin, int x, int y);
-int checkValidAndRemove(Triangle **triangle, Origin origin, int x, int y);
+int setEmpty(Triangle triangle[][HEIGHT], Origin origin, int x, int y);
+void hold(Triangle triangle[][HEIGHT], int x, int y);
+void tryToJumpTo(Triangle triangle[][HEIGHT], Origin origin, int x, int y);
+void jumpTo(Triangle triangle[][HEIGHT], Origin origin, int x, int y);
+int checkValidAndRemove(Triangle triangle[][HEIGHT], Origin origin, int x, int y);
 
 #endif

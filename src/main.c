@@ -31,7 +31,8 @@ void gameplay()
 	Origin origin;
 	float dt = 1/60;
 
-	Triangle **triangle = initialiseGame(&origin);
+	Triangle triangle[HEIGHT][HEIGHT];
+	initialiseGame(triangle, &origin);
 	fprintf(stdout, "DEBUG: Initialised Game\n");
 	update(dt, triangle);
 
@@ -39,15 +40,15 @@ void gameplay()
 	events(triangle, origin);
 }
 
-Triangle ** initialiseGame(Origin *origin)
+void initialiseGame(Triangle triangle[][HEIGHT], Origin *origin)
 {
 	// Create a jagged array in the form of a triangle
 
-	Triangle **triangle = (Triangle**)malloc(sizeof(Triangle*) * HEIGHT);
+	/*Triangle **triangle = (Triangle**)malloc(sizeof(Triangle*) * HEIGHT);
 
 	for (size_t i = 0; i < HEIGHT; i++) {
 		triangle[i] = (Triangle*)malloc(sizeof(Triangle) * i+1);
-	}
+	}*/
 
 	resize(triangle, origin);
 
@@ -63,11 +64,9 @@ Triangle ** initialiseGame(Origin *origin)
 		}
 		fprintf(stdout, "\n");
 	}
-
-	return triangle;
 }
 
-void resize(Triangle **triangle, Origin *origin)
+void resize(Triangle triangle[][HEIGHT], Origin *origin)
 {
 	int w, h;
 	SDL_GetWindowSize(window, &w, &h);
@@ -101,7 +100,7 @@ SDL_Color randColor()
 	return color;
 }
 
-void update(float dt, Triangle **triangle)
+void update(float dt, Triangle triangle[][HEIGHT])
 {
 	for (int i = 0; i < HEIGHT; i++) {
 		for (int j = 0; j < i+1; j++) {
@@ -113,7 +112,7 @@ void update(float dt, Triangle **triangle)
 	}
 }
 
-void drawGame(Triangle **triangle, Origin origin)
+void drawGame(Triangle triangle[][HEIGHT], Origin origin)
 {
 	SDL_Rect position = {0,0,0,0};
 	SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -140,7 +139,7 @@ void drawGame(Triangle **triangle, Origin origin)
 	SDL_RenderPresent(renderer);
 }
 
-void drawText(Triangle **triangle, SDL_Rect position)
+void drawText(Triangle triangle[][HEIGHT], SDL_Rect position)
 {
 	// SDL_Color color = {0,0,0,0};
 	char text[100];
@@ -186,7 +185,7 @@ void SDLPrint(int textsize, SDL_Color color, SDL_Rect position, const char *text
 	SDL_DestroyTexture(texture);
 }
 
-void events(Triangle **triangle, Origin origin)
+void events(Triangle triangle[][HEIGHT], Origin origin)
 {
 	SDL_Event event;
 	int x, y;
@@ -195,10 +194,10 @@ void events(Triangle **triangle, Origin origin)
 		SDL_WaitEvent(&event);
 
 		if (event.key.keysym.sym == SDLK_ESCAPE || event.type == SDL_QUIT) {
-			for (size_t i = 0; i < HEIGHT; i++) {
+			/*for (size_t i = 0; i < HEIGHT; i++) {
 				free(triangle[i]);
 			}
-			free(triangle);
+			free(triangle);*/
 			exit(0);
 		}
 
@@ -212,7 +211,7 @@ void events(Triangle **triangle, Origin origin)
 	}
 }
 
-void checkCircleClicked(Triangle **triangle, Origin origin, int x, int y)
+void checkCircleClicked(Triangle triangle[][HEIGHT], Origin origin, int x, int y)
 {
 	pixelToTriangle(triangle, &x, &y);
 
@@ -235,7 +234,7 @@ void checkCircleClicked(Triangle **triangle, Origin origin, int x, int y)
 	}
 }
 
-int pixelToTriangle(Triangle **triangle, int *x, int *y)
+int pixelToTriangle(Triangle triangle[][HEIGHT], int *x, int *y)
 {
 	for (int i = 0; i < HEIGHT; i++) {
 		for (int j = 0; j <= i; j++) {
@@ -261,7 +260,7 @@ int distance(int ax, int ay, int bx, int by)
 	return sqrt((ax - bx) * (ax - bx) + (ay - by) * (ay - by));
 }
 
-int setEmpty(Triangle **triangle, Origin origin, int x, int y)
+int setEmpty(Triangle triangle[][HEIGHT], Origin origin, int x, int y)
 {
 	if (triangle[y][x].status != 0) {
 		triangle[y][x].status = 0;
@@ -272,7 +271,7 @@ int setEmpty(Triangle **triangle, Origin origin, int x, int y)
 	}
 }
 
-void hold(Triangle **triangle, int x, int y) {
+void hold(Triangle triangle[][HEIGHT], int x, int y) {
 	if (triangle[y][x].status != 0) {
 		held_x = x;
 		held_y = y;
@@ -281,7 +280,7 @@ void hold(Triangle **triangle, int x, int y) {
 	}
 }
 
-void tryToJumpTo(Triangle **triangle, Origin origin, int x, int y) {
+void tryToJumpTo(Triangle triangle[][HEIGHT], Origin origin, int x, int y) {
 	if (triangle[y][x].status == 0) {
 		jumpTo(triangle, origin, x, y);
 		noneSelected = 1;
@@ -290,7 +289,7 @@ void tryToJumpTo(Triangle **triangle, Origin origin, int x, int y) {
 	}
 }
 
-void jumpTo(Triangle **triangle, Origin origin, int x, int y) {
+void jumpTo(Triangle triangle[][HEIGHT], Origin origin, int x, int y) {
 	if (checkValidAndRemove(triangle, origin, x, y)) {
 		triangle[y][x].color = triangle[held_y][held_x].color;
 		triangle[y][x].status = 1;
@@ -300,7 +299,7 @@ void jumpTo(Triangle **triangle, Origin origin, int x, int y) {
 	}
 }
 
-int checkValidAndRemove(Triangle **triangle, Origin origin, int x, int y) {
+int checkValidAndRemove(Triangle triangle[][HEIGHT], Origin origin, int x, int y) {
 	if (held_x == x) {
 		if (held_y - 2 == y) {
 			return setEmpty(triangle, origin, held_x, held_y - 1);
