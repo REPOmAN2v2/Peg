@@ -1,4 +1,79 @@
+#include <math.h>
+
 #include "draw.h"
+
+void drawGame(Triangle triangle[][HEIGHT], Origin origin)
+{
+	SDL_Rect position = {0,0,0,0};
+	SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+	SDL_RenderClear(renderer);
+
+	drawText(triangle, position);
+
+	for (size_t i = 0; i < HEIGHT; i++) {
+		for (size_t j = 0; j <= i; j++) {
+			if (triangle[i][j].status == 0) {
+				SDL_SetRenderDrawColor(renderer, emptyColor.r, emptyColor.g, emptyColor.b, emptyColor.a);
+				position.x = triangle[i][j].mid_x - emptySize / 2 + origin.x;
+				position.y = triangle[i][j].mid_y - emptySize / 2 + origin.y;
+				position.w = emptySize;
+				position.h = emptySize;
+				SDL_RenderFillRect(renderer, &position);
+			} else {
+				drawCircle(triangle[i][j].mid_x + origin.x, triangle[i][j].mid_y + origin.y, diameter / 2, triangle[i][j].color.r, triangle[i][j].color.g, triangle[i][j].color.b, triangle[i][j].color.a);
+				fillCircle(triangle[i][j].mid_x + origin.x, triangle[i][j].mid_y + origin.y, diameter / 2, triangle[i][j].color.r, triangle[i][j].color.g, triangle[i][j].color.b, triangle[i][j].color.a);
+			}
+		}
+	}
+
+	SDL_RenderPresent(renderer);
+}
+
+void drawText(Triangle triangle[][HEIGHT], SDL_Rect position)
+{
+	// SDL_Color color = {0,0,0,0};
+	char text[100];
+	//char *text = (char*)malloc(sizeof(char) * 100);
+
+	if (!noneSelected) {
+		// color = triangle[held_y][held_x].color;
+		sprintf(text, "Circle %d,%d selected", held_x, held_y);
+		//SDLPrint(30, color, position, text);
+		fprintf(stdout, "%s\n", text);
+	} else {
+		// color = textColor;
+		strcpy(text, "None Selected");
+		//SDLPrint(30, color, position, text);
+		fprintf(stdout, "%s\n", text);
+	}
+
+	//position.y = 50;
+
+	if (circles == 1) {
+		// color = textColor;
+		strcpy(text, "You won!");
+		//SDLPrint(30, color, position, text);
+		fprintf(stdout, "%s\n", text);
+	} else {
+		sprintf(text, "%d left", circles);
+		//SDLPrint(30, color, position, text);
+		fprintf(stdout, "%s\n", text);
+	}
+}
+
+void SDLPrint(int textsize, SDL_Color color, SDL_Rect position, const char *text)
+{
+	TTF_Font *font = TTF_OpenFont("../resources/FORCED_SQUARE.ttf", textsize);
+	SDL_Texture *texture;
+
+	texture = SDL_CreateTextureFromSurface(renderer, TTF_RenderText_Blended(font, text, color));
+	SDL_QueryTexture(texture, NULL, NULL, &position.w, &position.h);
+
+	SDL_RenderCopy(renderer, texture, NULL, &position);
+
+	TTF_CloseFont(font);
+	SDL_DestroyTexture(texture);
+}
 
 /* Adapted from SDL2_gfx */
 

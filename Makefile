@@ -5,7 +5,7 @@ SRC=./src
 CC = gcc
 CFLAGS := -Wall -g -std=c11
 
-_HEADERS := sdl.h draw.h
+_HEADERS := sdl.h draw.h game.h gameplay.h
 _OBJECTS := $(_HEADERS:.h=.o)
 OBJECTS = $(patsubst %,$(ODIR)/%,$(_OBJECTS))
 HEADERS = $(patsubst %,$(SRC)/%,$(_HEADERS))
