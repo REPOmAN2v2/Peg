@@ -9,7 +9,7 @@ int circles = HEIGHT + ((HEIGHT - 1) / 2) * HEIGHT;
 int emptySize = 25;
 int removeOne = 1;
 int noneSelected = 1;
-int held_x = 0, held_y = 0;
+int held_x = -1, held_y = -1;
 const SDL_Color textColor = {255,255,255,255};
 const SDL_Color emptyColor = {50,50,50,255};
 
@@ -131,8 +131,8 @@ void drawGame(Triangle **triangle, Origin origin)
 				position.h = emptySize;
 				SDL_RenderFillRect(renderer, &position);
 			} else {
-				drawCircle(triangle[i][j].act_x + origin.x, triangle[i][j].act_y + origin.y, diameter / 2, triangle[i][j].color.r, triangle[i][j].color.g, triangle[i][j].color.b, triangle[i][j].color.a);
-				fillCircle(triangle[i][j].act_x + origin.x, triangle[i][j].act_y + origin.y, diameter / 2, triangle[i][j].color.r, triangle[i][j].color.g, triangle[i][j].color.b, triangle[i][j].color.a);
+				drawCircle(triangle[i][j].mid_x + origin.x, triangle[i][j].mid_y + origin.y, diameter / 2, triangle[i][j].color.r, triangle[i][j].color.g, triangle[i][j].color.b, triangle[i][j].color.a);
+				fillCircle(triangle[i][j].mid_x + origin.x, triangle[i][j].mid_y + origin.y, diameter / 2, triangle[i][j].color.r, triangle[i][j].color.g, triangle[i][j].color.b, triangle[i][j].color.a);
 			}
 		}
 	}
@@ -189,6 +189,7 @@ void SDLPrint(int textsize, SDL_Color color, SDL_Rect position, const char *text
 void events(Triangle **triangle, Origin origin)
 {
 	SDL_Event event;
+	int x, y;
 
 	while (1) {
 		SDL_WaitEvent(&event);
@@ -198,33 +199,36 @@ void events(Triangle **triangle, Origin origin)
 				free(triangle[i]);
 			}
 			free(triangle);
-			exit(1);
+			exit(0);
 		}
 
 		if (event.type == SDL_MOUSEBUTTONDOWN) {
-			int x, y;
 			SDL_GetMouseState(&x, &y);
-			checkCircleClicked(triangle, x,y);
-			drawGame(triangle, origin);
+			checkCircleClicked(triangle, origin, x - origin.x, y - origin.y);
+			// drawGame(triangle, origin);
 			
 			fprintf(stdout, "DEBUG: %d,%d\n", x,y);
 		}
 	}
 }
 
-void checkCircleClicked(Triangle **triangle, int x, int y)
+void checkCircleClicked(Triangle **triangle, Origin origin, int x, int y)
 {
 	pixelToTriangle(triangle, &x, &y);
 
-	if (x != 0 && y !=0) {
+	if (x != -1 && y != -1) {
 		if (removeOne) {
-			setEmpty(triangle, x, y);
+			fprintf(stdout, "DEBUG: First circle to remove: (%d, %d)\n", x, y);
+			setEmpty(triangle, origin, x, y);
 			circles -= 1;
 			removeOne = 0;
+			drawGame(triangle, origin);
 		} else if (noneSelected) {
+			fprintf(stdout, "DEBUG: Moving (%d, %d)\n", x, y);
 			hold(triangle, x, y);
 		} else {
-			tryToJumpTo(triangle, x, y);
+			fprintf(stdout, "DEBUG: Check if moveable to (%d, %d)\n", x, y);
+			tryToJumpTo(triangle, origin, x, y);
 		}
 	} else {
 		noneSelected = 1;
@@ -233,20 +237,20 @@ void checkCircleClicked(Triangle **triangle, int x, int y)
 
 int pixelToTriangle(Triangle **triangle, int *x, int *y)
 {
-	for (int i; i < HEIGHT; i++) {
-		for (int j; j <= i; j++) {
-			if (distance(triangle[i][j].mid_x, triangle[i][j].mid_y, *x, *y) <= diameter / 2) {
+	for (int i = 0; i < HEIGHT; i++) {
+		for (int j = 0; j <= i; j++) {
+			if (distance(triangle[i][j].mid_x, triangle[i][j].mid_y, *x, *y) <= (diameter / 2)) {
 				// (x, y) in a circle
 				*x = j;
 				*y = i;
-				fprintf(stdout, "DEBUG: Clicked on circle (%d, %d)\n", *y, *x);
+				fprintf(stdout, "DEBUG: Clicked on circle (%d, %d)\n", *x, *y);
 				return 0;
 			}
 		}
 	}
 
-	*x = 0;
-	*y = 0;
+	*x = -1;
+	*y = -1;
 
 	fprintf(stdout, "DEBUG: Clicked outside a circle\n");
 	return 1;	
@@ -257,10 +261,11 @@ int distance(int ax, int ay, int bx, int by)
 	return sqrt((ax - bx) * (ax - bx) + (ay - by) * (ay - by));
 }
 
-int setEmpty(Triangle **triangle, int x, int y)
+int setEmpty(Triangle **triangle, Origin origin, int x, int y)
 {
 	if (triangle[y][x].status != 0) {
 		triangle[y][x].status = 0;
+		fprintf(stdout, "DEBUG: triangle (%d, %d) set empty\n", x, y);
 		return 1;
 	} else {
 		return 0;
@@ -272,44 +277,47 @@ void hold(Triangle **triangle, int x, int y) {
 		held_x = x;
 		held_y = y;
 		noneSelected = 0;
+		fprintf(stdout, "DEBUG: Now holding (%d, %d)\n", x, y);
 	}
 }
 
-void tryToJumpTo(Triangle **triangle, int x, int y) {
+void tryToJumpTo(Triangle **triangle, Origin origin, int x, int y) {
 	if (triangle[y][x].status == 0) {
-		jumpTo(triangle, x, y);
+		jumpTo(triangle, origin, x, y);
 		noneSelected = 1;
 	} else {
 		hold(triangle, x, y);
 	}
 }
 
-void jumpTo(Triangle **triangle, int x, int y) {
-	if (checkValidAndRemove(triangle, x, y)) {
-		triangle[y][x] = triangle[held_y][held_x];
-		setEmpty(triangle, held_x, held_y);
-		circles -= circles;
+void jumpTo(Triangle **triangle, Origin origin, int x, int y) {
+	if (checkValidAndRemove(triangle, origin, x, y)) {
+		triangle[y][x].color = triangle[held_y][held_x].color;
+		triangle[y][x].status = 1;
+		setEmpty(triangle, origin, held_x, held_y);
+		circles -= 1;
+		drawGame(triangle, origin);
 	}
 }
 
-int checkValidAndRemove(Triangle **triangle, int x, int y) {
+int checkValidAndRemove(Triangle **triangle, Origin origin, int x, int y) {
 	if (held_x == x) {
 		if (held_y - 2 == y) {
-			return setEmpty(triangle, held_x, held_y - 1);
+			return setEmpty(triangle, origin, held_x, held_y - 1);
 		} else if (held_y + 2 == y) {
-			return setEmpty(triangle, held_x, held_y + 1);
+			return setEmpty(triangle, origin, held_x, held_y + 1);
 		}
 	} else if (held_x - 2 == x) {
 		if (held_y - 2 == y) {
-			return setEmpty(triangle, held_x - 1, held_y - 1);
+			return setEmpty(triangle, origin, held_x - 1, held_y - 1);
 		} else if (held_y == y) {
-			return setEmpty(triangle, held_x - 1, held_y);
+			return setEmpty(triangle, origin, held_x - 1, held_y);
 		}
 	} else if (held_x + 2 == x) {
 		if (held_y == y) {
-			return setEmpty(triangle, held_x + 1, held_y);
+			return setEmpty(triangle, origin, held_x + 1, held_y);
 		} else if (held_y + 2 == y) {
-			return setEmpty(triangle, held_x + 1, held_y + 1);
+			return setEmpty(triangle, origin, held_x + 1, held_y + 1);
 		}
 	}
 

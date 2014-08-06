@@ -45,13 +45,13 @@ void drawGame(Triangle **triangle, Origin origin);
 void drawText(Triangle **triangle, SDL_Rect position);
 void SDLPrint(int textsize, SDL_Color color, SDL_Rect position, const char *text);
 void events(Triangle **triangle, Origin origin);
-void checkCircleClicked(Triangle **triangle, int x, int y);
+void checkCircleClicked(Triangle **triangle, Origin origin, int x, int y);
 int pixelToTriangle(Triangle **triangle, int *x, int *y);
 int distance(int ax, int ay, int bx, int by);
-int setEmpty(Triangle **triangle, int x, int y);
+int setEmpty(Triangle **triangle, Origin origin, int x, int y);
 void hold(Triangle **triangle, int x, int y);
-void tryToJumpTo(Triangle **triangle, int x, int y);
-void jumpTo(Triangle **triangle, int x, int y);
-int checkValidAndRemove(Triangle **triangle, int x, int y);
+void tryToJumpTo(Triangle **triangle, Origin origin, int x, int y);
+void jumpTo(Triangle **triangle, Origin origin, int x, int y);
+int checkValidAndRemove(Triangle **triangle, Origin origin, int x, int y);
 
 #endif
